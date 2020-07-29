@@ -26,6 +26,7 @@
         <!-- Add Firebase products that you want to use -->
         <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-auth.js"></script>
         <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-firestore.js"></script>
+        <script src="../node_modules/devtools-detect/index.js"></script>
 
         <link href = "https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css" rel = "stylesheet">
         <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
@@ -49,17 +50,13 @@
     </head>
 
     <body style="background-color: transparent">
-       
         <div class="main-head" id="main-head-darwin">
         </div>
         <div class="main-head" id="main-head-default">
         </div>
         <div id="loading">
-            <t id="loading-msg">
-            </t>
             <div id="loading-anim"></div>
-            <t id="loading-msg-sub"><b style="font-weight: 800 !important">Condution</b> is Loading...</t>
-            <t id="loading-bottom">&#169;2019-2020 Shabang Systems, LLC and the Condution Project Contributors. Licensed and Distributed under GPL-v3.0. beta-v0.2.2_build1_M.</t>
+            <t id="loading-bottom">&#169;2020 Shabang Systems, LLC and the Condution Project Contributors. v0.2.3_beta.1_M</t>
         </div>
         <div id="missing-internet" style="width: 100%; height: 100%;position: absolute; z-index: 10000; background-color:var(--background); display: flex; justify-content: center; align-items: center; display: none">
             <div style="margin-left: 20px;">
@@ -80,7 +77,7 @@
         <div id="onboarding" style="width: 100%; height: 100%;position: absolute; z-index: 98080000; background-color:var(--background); display: flex; justify-content: center; padding-top: 40vh; overflow: hidden !important; display:none;">
             <div style="width: 80%; z-index: 1000">
                 <h2 style="color: var(--content-normal-accent); font-size: 20px; font-weight: 300">Howdy! 👋 <span style="font-weight: 500">Welcome to</span><span style="font-weight:600"> Condution </span></h2>
-                <h2 style="color: var(--content-normal-accent); font-size: 14px; margin-bottom: 10px">Just a few quick things, and we will be task-wrangling in no time!</h2>
+                <h2 style="color: var(--content-normal-accent); font-size: 14px; margin-bottom: 10px">Just a few quick things, and we will have you task-wrangling in no time!</h2>
                 <br />
                 <div id="onboarding-0" class="task thov"> 
                     <div id="onboarding-display-0" class="task-display" style="display:block">
@@ -103,14 +100,14 @@
                     <div id="onboarding-display-2" class="task-display" style="display:block">
                         <input type="checkbox" id="onboarding-check-2" class="task-check"/>
                         <label class="task-pseudocheck" id="onboarding-pseudocheck-2" for="onboarding-check-2" style="font-family: 'Inter', sans-serif;">&zwnj;</label>
-                        <input class="task-name" id="onboarding-name-2" type="text" autocomplete="off" value="Let's sync! 🌐" readonly>
+                        <input class="task-name" id="onboarding-name-2" type="text" autocomplete="off" value="Let's do it! 🌐" readonly>
                     </div> 
                 </div>
                 <div id="onboarding-3" class="task thov" style="display:none;"> 
                     <div id="onboarding-display-3" class="task-display" style="display:block">
                         <input type="checkbox" id="onboarding-check-3" class="task-check"/>
                         <label class="task-pseudocheck" id="onboarding-pseudocheck-2" for="onboarding-check-3" style="font-family: 'Inter', sans-serif;">&zwnj;</label>
-                        <input class="task-name" id="onboarding-name-3" type="text" autocomplete="off" value="Don't sync. 💾" readonly>
+                        <input class="task-name" id="onboarding-name-3" type="text" autocomplete="off" value="Go accountless. 💾" readonly>
                     </div> 
                 </div>
                 <div id="onboarding-msg-3" style="color: var(--decorative-light); font-size: 13px; display:none">Data is securely backed up in the United States regardless of sync. No registration needed if sync is not enabled.</div>
@@ -215,7 +212,8 @@
                     </div>
                 </div>
                 <div id="convert" style="display: none"><i class="fas fa-arrow-circle-up"></i></div>
-                <input title="Add a task on enter" id="quickadd" type="text" autocomplete="off" value="" placeholder="Add something to the inbox?">
+                <div id="quickaddmobile" style="display: none"><i class="fas fa-plus"></i></div>
+                <input title="Add a task on enter" id="quickadd" style="display: none" type="text" autocomplete="off" value="" placeholder="Add something to the inbox?">
                 <div id="content-area" class="scrollable">
                     <div id="upcoming-page" class="page">
                         <div class="sandwich"><i class="fas fa-bars"></i></div>
@@ -300,20 +298,27 @@
                             <hr class="perspective-divider"/>
                         </div>
                         <div id="completed-content"> 
-                            <div class="perspective-subhead" id="comp-lb-td"> Today </div>
+                            <div class="perspective-subhead" id="comp-lb-td" style="display: none"> Today </div>
                             <div id="completed-today">
                             </div>
-                            <div class="perspective-subhead" id="comp-lb-yd"> Yesterday </div>
+                            <div class="perspective-subhead" id="comp-lb-yd" style="display: none"> Yesterday </div>
                             <div id="completed-yesterday">
                             </div>
-                            <div class="perspective-subhead" id="comp-lb-pw"> Past Week </div>
+                            <div class="perspective-subhead" id="comp-lb-pw" style="display: none"> Past Week </div>
                             <div id="completed-thisweek">
                             </div>
-                            <div class="perspective-subhead" id="comp-lb-pm"> Past Month </div>
+                            <div class="perspective-subhead" id="comp-lb-pm" style="display: none"> Past Month </div>
                             <div id="completed-thismonth">
                             </div>
-                            <div class="perspective-subhead" id="comp-lb-el"> Earlier/Untracked </div>
+                            <div class="perspective-subhead" id="comp-lb-el" style="display: none"> Earlier/Untracked </div>
                             <div id="completed-earlier">
+                            </div>
+                            <div id="completed-loading" style="margin-bottom: 10px; margin-top: 10px; display: none">
+                                <div id="completed-fm" style="color: var(--decorative-light-alt); font-weight: 600; font-size: 10px; transform: translateY(-2px); padding-left: 5px">Fetch more...</div>
+                                <div id="completed-spinner" style="transform: translateX(-3px); display:none">
+                                    <div class="lds-ring" style="transform: translate(6px, 6.5px);"><div></div><div></div><div></div><div></div></div>
+                                    <span style="color: var(--decorative-light-alt); font-weight: 600; font-size: 10px; transform: translateY(-2px); padding-left: 5px">Fetching 'em tasks!</span>
+                                </div>
                             </div>
                         </div>
                         <div id="blankimage-completed" class="blankimage-content">

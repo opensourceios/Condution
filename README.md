@@ -8,6 +8,11 @@
 
 ***
 
+## Those Download Buttons?
+👉 [**Direct Download**](https://condution.shabang.cf/#downloads) the latest version of Condution here! 👈 
+
+Also, here's the [App Store](https://apps.apple.com/us/app/condution/id1523249900) & [Play Store](https://play.google.com/store/apps/details?id=cf.shabang.condution) links for y'all phone nerds out there.
+
 ## The App
 Condution is a wonderful electron app built to create a perfectly easy task-management dashboard that's powerful, yet also simple. The inspiration of the project spanned from our long frustration with the current state of productivity software on the internet — they are expensive and often complicated to use.
 
@@ -19,11 +24,11 @@ Condution attempts to change this. We want to create an open-source productivity
 </p>
 
 ### Features 
-#### The Standard Spheal
+#### The Standard Spiel
 Create tasks, manage them in projects, add some tags, set due dates, and repeat them at will. Condution has the whole nine-yards of the core list-making features nailed so you could create and edit anything from grocery lists to hundred-task projects.
 
 #### Due + Start Dates (and Times!)
-Yes, you heard it right! Unlike some of the other apps out there, we know that timing is important to people! Every task is hidden until a certain *time* and due at precisely at a *time*, so your know day could be managed right down to your needs.
+Yes, you heard it right! Unlike some of the other apps out there, we know that timing is important to people! Every task is hidden until a certain *time* and due at precisely at a *time*, so your day can be managed right down to your needs.
 
 #### Sequential and Parallel Projects!
 Some tasks can't really be done without others before it being done first, and we understand that. Tasks blocked in a sequential project could be hidden if needed, and shown again when ready.

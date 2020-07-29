@@ -17,31 +17,40 @@ require('bootstrap-tagsinput');
 require('select2')();
 var moment = require('moment-timezone');
 var { Plugins, HapticsImpactStyle, HapticsNotificationType } = require('@capacitor/core');
-var { Haptics, Network, Browser, Storage } = Plugins;
+var { Haptics, Network, Browser, Storage, Device } = Plugins;
+
+const isMobile = async function () {
+    return (await Device.getInfo()).platform !== "web";
+};
+
+const isiOS = async function() {
+    return (await Device.getInfo()).operatingSystem === "ios";
+}
 
 const preventDefault = e => e.preventDefault();// When rendering our container
 /*window.addEventListener('touchmove', preventDefault, {*/
    //passive: false
 //});
 //
-window.addEventListener("touchmove", function(event) {
-  if (!event.target.classList.contains('scrollable')) {
-    // no more scrolling
-    event.preventDefault();
-  }
-}, false);
+/*window.addEventListener("touchmove", function(event) {*/
+  //if (!event.target.classList.contains('scrollable')) {
+    //// no more scrolling
+    //event.preventDefault();
+  //}
+/*}, false);*/
 
 let handleInternet = function(hasInternet) {
     if (hasInternet)
         $("#missing-internet").hide();
     else
         $("#missing-internet").css("display", "flex");
-}
+};
 var E = require('./backend/CondutionEngine');
 
 E.start(firebase);
 
 // Select2 Modifications
+// TODO WHY ARE THESE ALL VAR!!!
 (function($) {
     var Defaults = $.fn.select2.amd.require('select2/defaults');
     $.extend(Defaults.defaults, {
@@ -80,9 +89,9 @@ ipcRenderer.on("systheme-light", function (event, data) {
     $("body").addClass(currentTheme);
 });
 
-let loading_greeting_msgs = ["Welcome.", "Bontehu!", "Breath.", "Coffee or Tea?", "Productivity!", "Look up!", "Ready? Go!", "Accomplish!"];
-let loading_greeting = loading_greeting_msgs[Math.floor(Math.random() * loading_greeting_msgs.length)];
-$("#loading-msg").html(loading_greeting);
+/*let loading_greeting_msgs = ["Welcome.", "Bontehu!", "Breath.", "Coffee or Tea?", "Productivity!", "Look up!", "Ready? Go!", "Accomplish!"];*/
+//let loading_greeting = loading_greeting_msgs[Math.floor(Math.random() * loading_greeting_msgs.length)];
+//$("#loading-msg").html(loading_greeting);
 
 lottie.loadAnimation({
     container: $("#loading-anim")[0],
@@ -90,11 +99,7 @@ lottie.loadAnimation({
     autoplay: true,
     loop: true,
     path: 'static/loadanim_final.json'
-})
-$("#loading").hide().css("display", "flex").fadeIn();
-
-const { remote } = require('electron');
-const { Menu, MenuItem } = remote;
+});
 
 // TODO: apply themes to colors
 // TODO: make a kickstarter
@@ -138,19 +143,19 @@ const interfaceUtil = function() {
 
     const newPlaceholderImage = function() {
         $(".blankimage").attr("src","./static/BlkArt/BlkArt_"+Math.floor(Math.random() * 3)+".png");
-    }
+    };
 
     const menu = function() {
         const openMenu = function() {
             $("#left-menu").animate({"left": "0px"}, 100);
-        }
+        };
 
         const closeMenu = function() {
             $("#left-menu").animate({"left": "-260px"}, 150);
-        }
+        };
 
         return {open:openMenu, close:closeMenu};
-    }()
+    }();
 
     const smartParse = function(timeformat, timeString, o) {
         // smart, better date parsing with chrono
@@ -185,13 +190,14 @@ const interfaceUtil = function() {
     };
 
 
-    let calculateTaskHTML = function(taskId, name, desc, projectSelects, rightCarrotColor, disableTB) {
+    let calculateTaskHTML = function(taskId, name, desc, projectSelects, rightCarrotColor, disableTB, mb) {
+        let content = mb ? "readonly" : "";
         return `
         <div id="task-${taskId}" class="task thov"> 
             <div id="task-display-${taskId}" class="task-display" style="display:block">
                 <input type="checkbox" id="task-check-${taskId}" class="task-check"/>
                 <label class="task-pseudocheck" id="task-pseudocheck-${taskId}" for="task-check-${taskId}" style="font-family: 'Inter', sans-serif;">&zwnj;</label>
-                <input class="task-name" id="task-name-${taskId}" type="text" autocomplete="off" value="${name}">
+                <input class="task-name" id="task-name-${taskId}" type="text" autocomplete="off" value="${name}" ${content}>
                 <div class="task-trash task-subicon" id="task-trash-${taskId}" style="float: right; display: none;"><i class="fas fa-trash"></i></div>
                 <div class="task-repeat task-subicon" id="task-repeat-${taskId}" style="float: right; display: none;"><i class="fas fa-redo-alt"></i></div>
         </div> 
@@ -209,6 +215,7 @@ const interfaceUtil = function() {
                         <label class="btn task-floating" id="task-floating-no-${taskId}"> <input type="radio" name="task-floating"> <i class="far fa-circle" style="transform:translateY(-4px)"></i> </label>
                         <label class="btn task-floating" id="task-floating-yes-${taskId}"> <input type="radio" name="task-floating"> <i class="fas fa-circle" style="transform:translateY(-4px)"></i> </label>
                     </div> 
+                    <span class="task-close-button" id="task-close-button-${taskId}" style="float:right; transform: translateX(20px)"><div class="project-action" style="padding-top: 4px"><i class="far fa-times-circle"></i></div></span>
                 </div> 
             <div class="task-tools-sub task-tools-date">
                 <div class="label"><i class="far fa-play-circle"></i></div>
@@ -241,6 +248,14 @@ async function loadApp(user) {
     // User is signed in. Do user related things.
     // Check user's theme
     ui.user.set(user);
+    if (await isMobile()) {
+    //if (true) {
+        $("#quickaddmobile").show();
+        $("#quickadd").hide();
+    } else {
+        $("#quickaddmobile").hide();
+        $("#quickadd").show();
+    }
     await ui.constructSidebar();
     await ui.load("upcoming-page");
 
@@ -249,7 +264,7 @@ async function loadApp(user) {
         handleInternet(status.connected);
     });
     let status = Network.getStatus().then(status=>handleInternet(status.connected));
-    ;
+
 
     $("#loading").fadeOut();
     $("#auth-content-wrapper").fadeOut();
@@ -323,7 +338,7 @@ let presentWelcome = function() {
                 setTimeout(()=>$("#onboarding").fadeOut(1000), 1000);
                 Storage.set({
                     key: "condution_onboarding",
-                    value: 1
+                    value: "done"
                 });
         }            
       });
@@ -338,7 +353,7 @@ let presentWelcome = function() {
                     $("#onboarding").fadeOut(1000);
                     Storage.set({
                         key: "condution_onboarding",
-                        value: 1
+                        value: "done"
                     });
             });
         }        
@@ -362,7 +377,7 @@ let authUI = function() {
             await loadApp(firebase.auth().currentUser);
             isAnomAuthInProgress = false;
         });
-    }
+    };
 
     let auth = async function() {
         if (isNASuccess) {
@@ -406,7 +421,7 @@ let authUI = function() {
         }).catch(function(error) {
             $(".auth-upf").addClass("wrong");
         });
-    }
+    };
 
     let nu = function() {
         let problem = false;
@@ -426,7 +441,7 @@ let authUI = function() {
         $('#recover-password').fadeOut(function() {
             $('#need-verify').fadeIn();
         });
-    }
+    };
 
     $("#password").keydown(function(e) {
         if (e.keyCode == 13) {
@@ -789,10 +804,9 @@ let ui = function() {
             $("#perspective-unit").hide();
             $("#overlay").fadeIn(200).css("display", "flex").hide().fadeIn(200);
             $("#convert-unit").fadeIn(200);
-        }
+        };
         return convert;
     }();
-
 
     // repeat view
     const showRepeat = function() {
@@ -878,6 +892,7 @@ let ui = function() {
                 $("#repeat-monthgrid").children().each(function(e) {
                     $(this).css({"background-color": interfaceUtil.gtc("--background")});
                 });
+                // TODO why do these exist? Free memory hogging? At least comment them out.
                 let repeatWeekDays = [];
                 let repeatMonthDays = [];
             }
@@ -1039,8 +1054,12 @@ let ui = function() {
             $("#task-edit-"+activeTask).slideUp(300);
             $("#task-trash-"+activeTask).css("display", "none");
             $("#task-repeat-"+activeTask).css("display", "none");
-            $("#task-"+activeTask).stop().animate({"background-color": interfaceUtil.gtc("--background"), "padding": "0", "margin":"0"}, 100);
+            $("#task-"+activeTask).stop().animate({"background-color": interfaceUtil.gtc("--background"), "padding": "0", "margin":$(window).width()<576?"5px 0 5px 0":"0"}, 100);
             $("#task-"+activeTask).css({"border-bottom": "0", "border-right": "0", "box-shadow": "0 0 0"});
+            //if (await isMobile())
+            $("#task-name-" +activeTask).prop("readonly", true);
+            if (await isMobile())
+                $(".page").removeClass("pa-bottom");
             await refresh();
             if (activeTaskDeInboxed) {
                 let hTask = activeTask;
@@ -1178,9 +1197,16 @@ let ui = function() {
             let rightCarrotColor = interfaceUtil.gtc("--decorative-light");
             // -------------------------------------------------------------------------------
             // Part 2: the task!
-            $("#" + pageId).append(interfaceUtil.taskHTML(taskId, name, desc, projectSelects, rightCarrotColor, disabletextbox));
+            $("#" + pageId).append(interfaceUtil.taskHTML(taskId, name, desc, projectSelects, rightCarrotColor, disabletextbox, true));
             // -------------------------------------------------------------------------------
             // Part 3: customize the task!
+            // Show/hide the close button
+
+/*            if (await isMobile())*/
+                //$("#task-close-button-" + taskId).show();
+            /*else*/
+            $("#task-close-button-" + taskId).hide();
+
             // Set the dates, aaaand set the date change trigger
             $("#task-defer-" + taskId).datetimepicker({
                 timeInput: true,
@@ -1282,7 +1308,7 @@ let ui = function() {
             let duestr = "";
             $("#task-due-" + taskId).keydown(function(e) {
                 //e.preventDefault();
-                // TODO: this is a janky manual re-implimentation 
+                // TODO: this is a janky manual re-implementation
                 // of a textbox to override jQuery's manual 
                 // re-implimentation. The todo is to make it less
                 // janky.
@@ -1370,7 +1396,7 @@ let ui = function() {
             //})
             //
             $('#task-project-'+taskId).select2({
-                'width': '80%',
+                'width': $(window).width()<576 ? '88%' : '80%',
                 searchInputPlaceholder: "Search Projects...",
                 placeholder: 'Inbox',
                 allowClear: true
@@ -1445,7 +1471,7 @@ let ui = function() {
                     $('#task-name-' + taskId).css("color", interfaceUtil.gtc("--task-checkbox"));
                     $('#task-name-' + taskId).css("text-decoration", "line-through");
                     $('#task-pseudocheck-' + taskId).css("opacity", "0.6");
-                    $('#task-' + taskId).stop().animate({"margin": "5px 0 5px 0"}, 200);
+                    $('#task-' + taskId).stop().animate({"margin": $(window).width()<576?"20px 0 20px 0":"5px 0 5px 0"}, 200);
                     Haptics.notification({type: HapticsNotificationType.SUCCESS});
                     $('#task-' + taskId).slideUp(300);
                     E.db.completeTask(uid, taskId).then(function(e) {
@@ -1939,6 +1965,11 @@ let ui = function() {
                 $("#upcoming-daterow-w"+i).html(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]);
                 d.setDate(d.getDate()+1);
             }
+            if (await isMobile()) {
+            //if (true) {
+                $("#upcoming-daterow-7").hide();
+                $("#upcoming-daterow-6").hide();
+            }
             Promise.all(
                 // load inbox tasks
                 inboxandDS[0].map(task => taskManager.generateTaskInterface("inbox", task)),
@@ -1962,39 +1993,119 @@ let ui = function() {
             });
         }
 
+        let completedLoaders;
+        $('#completed-fm').click(function() {
+            $('#completed-fm').fadeOut(function() {
+                $("#completed-spinner").fadeIn(async function() {
+                    let tally = 0;
+                    let kill = 10;
+                    let stop = false;
+                    while (!stop && completedLoaders.length !== 0) {
+                        let pld = completedLoaders.shift();
+                        tally += 1;
+                        if (pld.task === "header") {
+                            if (tally <= (kill-2))
+                                $("#"+pld.payload).show();
+                            else {
+                                completedLoaders.unshift(pld);
+                                stop = true;
+                            }
+                        } else
+                            await taskManager.generateTaskInterface(pld.payload[0], pld.payload[1]);
+                        if (tally >= kill)
+                            stop = true;
+                        if (completedLoaders.length === 0)
+                            $("#completed-loading").hide();
+
+                    }
+                    $('#completed-fm').show();
+                    $("#completed-spinner").hide();
+                });
+            });
+        });
+
         // completed view loader
         let completed = async function() {
+            completedLoaders = [];
             // get completed tasks
             let [tasksToday, tasksYesterday, tasksWeek, tasksMonth, evenBefore] = await E.db.getCompletedTasks(uid);
+
 
             // Show or unshow blankimage
             $("#blankimage-completed").css("opacity", "0.0");
             $("#blankimage-completed").css("display", (tasksToday+tasksYesterday+tasksWeek+tasksMonth+evenBefore).length == 0 ? "flex" : "none");
             $("#blankimage-completed").stop().animate({"opacity": "0.2"});
 
+            let cld = [];
+
+            if (tasksToday.length > 0) {
+                cld.push({task: "header", payload: "comp-lb-td"});
+            }
+
             // Show completed tasks
             for (let taskId of tasksToday) {
-                await taskManager.generateTaskInterface("completed-today", taskId);
+                cld.push({task: "task", payload: ["completed-today", taskId]});
             }
+
+            if (tasksYesterday.length > 0)
+                cld.push({task: "header", payload: "comp-lb-yd"});
+
             for (let taskId of tasksYesterday) {
-                await taskManager.generateTaskInterface("completed-yesterday", taskId);
+                cld.push({task: "task", payload: ["completed-yesterday", taskId]});
             }
+
+            if (tasksWeek.length > 0)
+                cld.push({task: "header", payload: "comp-lb-pw"});
+
             for (let taskId of tasksWeek) {
-                await taskManager.generateTaskInterface("completed-thisweek", taskId);
+                cld.push({task: "task", payload: ["completed-thisweek", taskId]});
             }
+
+            if (tasksMonth.length > 0)
+                cld.push({task: "header", payload: "comp-lb-pm"});
+
             for (let taskId of tasksMonth) {
-                await taskManager.generateTaskInterface("completed-thismonth", taskId);
+                cld.push({task: "task", payload: ["completed-thismonth", taskId]});
             }
+
+            if (tasksWeek.length > 0)
+                cld.push({task: "header", payload: "comp-lb-el"});
+
             for (let taskId of evenBefore) {
-                await taskManager.generateTaskInterface("completed-earlier", taskId);
+                cld.push({task: "task", payload: ["completed-earlier", taskId]});
+            }
+
+            completedLoaders = cld;
+
+            let tally = 0;
+            let kill = 7;
+            let stop = false;
+            if (completedLoaders.length !== 0)
+                $("#completed-loading").show();
+            while (!stop && completedLoaders.length !== 0) {
+                let pld = completedLoaders.shift();
+                tally += 1;
+                if (pld.task === "header") {
+                    if (tally <= (kill-2))
+                        $("#"+pld.payload).show();
+                    else {
+                        completedLoaders.unshift(pld);
+                        stop = true;
+                    }
+                } else
+                    await taskManager.generateTaskInterface(pld.payload[0], pld.payload[1]);
+                if (tally >= kill)
+                    stop = true;
+                if (completedLoaders.length === 0)
+                    $("#completed-loading").hide();
             }
 
             // Hide unneeded labels
-            if (tasksToday.length === 0) $("#comp-lb-td").hide(); else $("#comp-lb-td").show();
-            if (tasksYesterday.length === 0) $("#comp-lb-yd").hide(); else $("#comp-lb-yd").show();
-            if (tasksWeek.length === 0) $("#comp-lb-pw").hide(); else $("#comp-lb-pw").show();
-            if (tasksMonth.length === 0) $("#comp-lb-pm").hide(); else $("#comp-lb-pm").show();
-            if (evenBefore.length === 0) $("#comp-lb-el").hide(); else $("#comp-lb-el").show();
+/*            if (tasksToday.length === 0) $("#comp-lb-td").hide(); else $("#comp-lb-td").show();*/
+            //if (tasksYesterday.length === 0) $("#comp-lb-yd").hide(); else $("#comp-lb-yd").show();
+            //if (tasksWeek.length === 0) $("#comp-lb-pw").hide(); else $("#comp-lb-pw").show();
+            //if (tasksMonth.length === 0) $("#comp-lb-pm").hide(); else $("#comp-lb-pm").show();
+            /*if (evenBefore.length === 0) $("#comp-lb-el").hide(); else $("#comp-lb-el").show();*/
         }
 
 
@@ -2028,10 +2139,10 @@ let ui = function() {
             // update the titlefield
             $("#project-title").val(projectName);
             if (pageIndex.projectDir.length <= 1) {
-                $("#project-back").hide()
+                $("#project-back").hide();
                 $("#project-titlerow").removeClass("perspective-title-subproject");
             } else {
-                $("#project-back").show()
+                $("#project-back").show();
                 $("#project-titlerow").addClass("perspective-title-subproject");
             }
             // get the project structure, and load the content
@@ -2089,6 +2200,11 @@ let ui = function() {
         $("#completed-thisweek").empty();
         $("#completed-thismonth").empty();
         $("#completed-earlier").empty();
+        $("#comp-lb-td").hide();
+        $("#comp-lb-yd").hide();
+        $("#comp-lb-pw").hide();
+        $("#comp-lb-pm").hide();
+        $("#comp-lb-el").hide();
         $("#project-content").empty();
         $("#perspective-content").empty();
         
@@ -2193,7 +2309,11 @@ let ui = function() {
             e.stopImmediatePropagation();
             return;
         }
-        if (activeTask) await taskManager.hideActiveTask();
+        let activeTaskLeverage = 0;
+        if (activeTask) {
+            activeTaskLeverage = $("#task-"+activeTask).height()+40;
+            await taskManager.hideActiveTask(); 
+        }
         if ($(e.target).hasClass('task-pseudocheck') || $(e.target).hasClass('task-check')) {
             e.stopImmediatePropagation();
             return;
@@ -2201,9 +2321,17 @@ let ui = function() {
             let taskInfo = $(this).attr("id").split("-");
             let task = taskInfo[taskInfo.length - 1];
             activeTask = task;
+            //let mb = await isMobile();
             $("#task-" + task).stop().animate({"background-color": interfaceUtil.gtc("--task-feature"), "padding": "10px", "margin": "15px 0 30px 0"}, 300);
             $("#quickadd").addClass("qa_bottom");
             $("#convert").addClass("convert_bottom");
+            //if (await isMobile())
+            $("#task-name-" + task).prop("readonly", false);
+/*            if (mb) {*/
+                //$('html').animate({ 
+                    //scrollTop: $("#task-"+task).offset().top-activeTaskLeverage-50
+                //}, 'slow');
+            /*}*/
             $("#task-edit-" + activeTask).stop().slideDown(200);
             $("#task-trash-" + activeTask).css("display", "block");
             $("#task-repeat-" + activeTask).css("display", "block");
@@ -2211,6 +2339,11 @@ let ui = function() {
             pageIndex.dateLoaders[activeTask]();
             sorters.project.option("disabled", true);
             sorters.inbox.option("disabled", true);
+            if (await isMobile()) {
+                $(".page").addClass("pa-bottom");
+                $("#task-name-" + task).blur();
+            }
+            /*}*/
         }
     });
 
@@ -2223,6 +2356,11 @@ let ui = function() {
             }
             taskManager.hideActiveTask();
         }
+    });
+
+    $(document).on("click", ".task-close-button", function(e) {
+        taskManager.hideActiveTask();
+        document.activeElement.blur();
     });
 
     $(document).on("click", "#project-back", function() {
@@ -2330,7 +2468,7 @@ let ui = function() {
 
     $(document).on("click", "#project-trash", function() {
         let pid = (pageIndex.projectDir[pageIndex.projectDir.length-1]).split("-")[1];
-        let isTopLevel = pageIndex.projectDir.length === 1 ? true : false;
+        let isTopLevel = pageIndex.projectDir.length === 1 ? true : false; // why does this exist?
         E.db.deleteProject(uid, pid).then(function() {
             pageIndex.projectDir.pop();
             interfaceUtil.newPHI();
@@ -2371,11 +2509,15 @@ let ui = function() {
         };
         E.db.newTask(uid, ntObject).then(function(ntID) {
             E.db.associateTask(uid, ntID, pid);
+            let activeTaskLeverage = 0;
             $("#quickadd").addClass("qa_bottom");
             $("#convert").addClass("convert_bottom");
-            taskManager.generateTaskInterface("project-content", ntID, true).then(function() {
+            taskManager.generateTaskInterface("project-content", ntID, true).then(async function() {
                 let task = ntID;
                 activeTask = task;
+                if (activeTask) {
+                    activeTaskLeverage = $("#task-"+activeTask).height()+40;
+                }
                 $("#task-" + task).stop().animate({"background-color": interfaceUtil.gtc("--task-feature"), "padding": "10px", "margin": "15px 0 30px 0"}, 300);
                 $("#task-edit-" + activeTask).slideDown(200);
                 $("#task-trash-" + activeTask).css("display", "block");
@@ -2383,8 +2525,14 @@ let ui = function() {
                 $("#task-" + task).css({"box-shadow": "1px 1px 5px "+ interfaceUtil.gtc("--background-feature")});
                 $("#task-name-" + task).focus();
                 $("#blankimage-project").hide();
+                $("#task-name-" + task).prop("readonly", false);
                 sorters.project.option("disabled", true);
                 sorters.inbox.option("disabled", true);
+                if (await isMobile()) {
+                    $(".page").addClass("pa-bottom");
+                    $("#task-name-" + task).blur();
+                }
+
             });
         });
     });
@@ -2394,7 +2542,6 @@ let ui = function() {
         let value = $(this).val();
         E.db.modifyProject(uid, pid, {name: value});
         reloadPage(true);
-        //console.error(e);
     });
 
     $(document).on("change", "#perspective-title", function(e) {
@@ -2402,7 +2549,6 @@ let ui = function() {
         let value = $(this).val();
         E.db.modifyPerspective(uid, pstID, {name: value});
         reloadPage(true);
-        //console.error(e);
     });
 
     $(document).on("click", "#project-sequential-yes", function(e) {
@@ -2410,7 +2556,6 @@ let ui = function() {
         E.db.modifyProject(uid, pid, {is_sequential: true}).then(function() {
             reloadPage(true);
         });
-        //console.error(e);
     });
 
     $(document).on("click", "#project-sequential-no", function(e) {
@@ -2418,22 +2563,18 @@ let ui = function() {
         E.db.modifyProject(uid, pid, {is_sequential: false}).then(function() {
             reloadPage(true);
         });
-        //console.error(e);
     });
 
     $(document).on("click", "#logout", function(e) {
         firebase.auth().signOut().then(() => {}, console.error);
-        //console.error(e);
     });
 
     $(document).on("click", "#perspective-edit", function(e) {
         showPerspectiveEdit(pageIndex.pageContentID);
-        //console.error(e);
     });
 
     $("#quickadd").click(function(e) {
         $(this).stop().animate({"width": "280px"}, 500);
-        //console.error(e);
     });
 
     $("#quickadd").blur(function(e) {
@@ -2455,7 +2596,7 @@ let ui = function() {
             tb.stop().animate({"background-color": interfaceUtil.gtc("--quickadd-success"), "color": interfaceUtil.gtc("--quickadd-success-text")}, function() {
                 setTimeout(()=>(pageIndex.interfaceLocks.qaLock = false), 750);
                 let newTaskUserRequest = chrono.parse($(this).val());
-                // TODO: so this dosen't actively watch for the word "DUE", which is a problem.
+                // TODO: so this doesn't actively watch for the word "DUE", which is a problem.
                 // Make that happen is the todo.
                 let startDate;
                 //let endDate;
@@ -2591,6 +2732,94 @@ let ui = function() {
         authUI.anonomGeneration();
     });
 
+    // https://codepen.io/leonardo-fernandes/pen/xjzgWM
+    $(document).on("click", "#quickaddmobile", async function(evt) {
+    var btn = $(evt.currentTarget);
+    var x = evt.pageX - btn.offset().left;
+    var y = evt.pageY - btn.offset().top;
+  
+    var duration = 500;
+    var animationFrame, animationStart;
+  
+    var animationStep = function(timestamp) {
+        if (!animationStart) {
+          animationStart = timestamp;
+        }
+   
+    var frame = timestamp - animationStart;
+    if (frame < duration) {
+      var easing = (frame/duration) * (2 - (frame/duration));
+      
+      var circle = "circle at " + x + "px " + y + "px";
+      var color = "rgba(0, 0, 0, " + (0.3 * (1 - easing)) + ")";
+      var stop = 90 * easing + "%";
+
+      btn.css({
+        "background-image": "radial-gradient(" + circle + ", " + color + " " + stop + ", transparent " + stop + ")"
+      });
+
+      animationFrame = window.requestAnimationFrame(animationStep);
+    } else {
+      $(btn).css({
+        "background-image": "none"
+      });
+      window.cancelAnimationFrame(animationFrame);
+    }
+
+
+    
+  };
+  
+    Haptics.impact({style: HapticsImpactStyle.Heavy});
+  animationFrame = window.requestAnimationFrame(animationStep);
+  loadView("upcoming-page");
+    let ntObject = {
+        desc: "",
+        isFlagged: false,
+        isFloating: false,
+        isComplete: false,
+        project: "",
+        tags: [],
+        timezone: moment.tz.guess(),
+        repeat: {rule: "none"},
+        name: "",
+    };
+    E.db.newTask(uid, ntObject).then(function(ntID) {
+        let activeTaskLeverage = 0;
+        E.db.getInboxTasks(uid).then(function(e){
+            iC = e.length;
+            $("#unsorted-badge").html(''+iC);
+            $("#inbox-subhead").slideDown(300);
+            $("#inbox").slideDown(300);
+        });
+        $("#quickadd").addClass("qa_bottom");
+        $("#convert").addClass("convert_bottom");
+        taskManager.generateTaskInterface("inbox", ntID, true).then(async function() {
+            let task = ntID;
+            activeTask = task;
+            if (activeTask) {
+                activeTaskLeverage = $("#task-"+activeTask).height()+40;
+            }
+            $("#task-" + task).stop().animate({"background-color": interfaceUtil.gtc("--task-feature"), "padding": "10px", "margin": "15px 0 30px 0"}, 300);
+            $("#task-edit-" + activeTask).slideDown(200);
+            $("#task-trash-" + activeTask).css("display", "block");
+            $("#task-repeat-" + activeTask).css("display", "block");
+            $("#task-" + task).css({"box-shadow": "1px 1px 5px "+ interfaceUtil.gtc("--background-feature")});
+            $("#task-name-" + task).focus();
+            $("#blankimage-project").hide();
+            $("#task-name-" + task).prop("readonly", false);
+            sorters.project.option("disabled", true);
+            sorters.inbox.option("disabled", true);
+            if (await isMobile()) {
+                $(".page").addClass("pa-bottom");
+                $("#task-name-" + task).blur();
+            }
+
+        });
+    });
+
+});
+
 
     interfaceUtil.newPHI();
 
@@ -2667,16 +2896,26 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 
-(async function potentiallyOnboard(test) {
+function warn() {
+    console.log('%c', "height: 300px");
+    console.log('%c19/10 chance you are either a terribly smart person and should work with us (hliu@shabang.cf) or are being taken advantanged of by a very terrible person. ', 'background: #fff0f0; color: #434d5f; font-size: 20px');
+    console.log('%cSTOP! ', 'background: #fff0f0; color: #434d5f; font-size: 80px');
+    console.log('%cClose this panel now.', 'background: #fff0f0;color: black;'+css);
+    console.log('%cPlease help us to help you... Don\'t self XSS yourself.', 'background: #fff0f0; color: #434d5f; font-size: 15px');
+}
+
+window.addEventListener('devtoolschange', event => {
+    warn();
+});
+
+(async function potentiallyOnboard() {
     const ret = await Storage.get({ key: 'condution_onboarding' });
     const val = JSON.parse(ret.value);
-    if (val !== 1) {
+    if (ret.value !== "done" && val !== "done") {
         presentWelcome();
+    } else {
+        $("#loading").hide().css("display", "flex").fadeIn();
     }
 })();
 
-console.log('%cSTOP! ', 'background: #fff0f0; color: #434d5f; font-size: 80px');
-console.log('%cClose this panel now.', 'background: #fff0f0;color: black;'+css);
-console.log('%c19/10 chance you are either a terribly smart person and should work with us (hliu@shabang.cf) or are being taken advantanged of by a very terrible person. ', 'background: #fff0f0; color: #434d5f; font-size: 20px');
-console.log('%cPlease help us to help you... Don\'t self XSS yourself.', 'background: #fff0f0; color: #434d5f; font-size: 15px');
 
