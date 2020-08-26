@@ -25,7 +25,7 @@ module.exports = async function (params) {
             appBundleId: appId,
             appPath: appPath,
             appleId: process.env.APPLEID,
-            appleIdPassword: process.env.APPLEIDPASS,
+            appleIdPassword: process.env.APPLEIDPASS
         });
     } catch (error) {
         console.error(error);
